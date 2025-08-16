@@ -1,38 +1,44 @@
 let questions = [];
 let score = 0;
 let currentQuestionIndex = 0;
+const QUESTIONS_PER_TEST = 30;  // number of questions per quiz
+let selectedQuestions = [];
 
 function loadQuestionsFromCSV() {
-    Papa.parse("QB.csv", {
+    Papa.parse("questions.csv", {
         download: true,
         header: true,
         complete: function(results) {
             questions = results.data.filter(q => q.question && q.option1); // remove blank rows
             shuffleArray(questions);
+
+            // Pick 30 random questions for this test
+            selectedQuestions = questions.slice(0, QUESTIONS_PER_TEST);
+
             loadQuestion();
         }
     });
 }
 
 function loadQuestion() {
-    const q = questions[currentQuestionIndex];
+    const q = selectedQuestions[currentQuestionIndex];
     document.getElementById("question").innerText = q.question;
 
     const answersDiv = document.getElementById("answers");
     answersDiv.innerHTML = "";
 
     [q.option1, q.option2, q.option3, q.option4].forEach((answer, index) => {
-        if (answer) { // only show non-empty options
+        if (answer) {
             const btn = document.createElement("button");
             btn.innerText = answer;
-            btn.onclick = () => checkAnswer(index + 1); // 1-based
+            btn.onclick = () => checkAnswer(index + 1);
             answersDiv.appendChild(btn);
         }
     });
 }
 
 function checkAnswer(selectedIndex) {
-    const q = questions[currentQuestionIndex];
+    const q = selectedQuestions[currentQuestionIndex];
     const correctIndex = parseInt(q.correct);
 
     const answerButtons = document.querySelectorAll("#answers button");
@@ -44,16 +50,17 @@ function checkAnswer(selectedIndex) {
 
     if (selectedIndex === correctIndex) score++;
 
-    document.getElementById("score").innerText = `Score: ${score}/${questions.length}`;
+    document.getElementById("score").innerText = `Score: ${score}/${selectedQuestions.length}`;
     document.getElementById("next-btn").style.display = "block";
 }
 
 document.getElementById("next-btn").addEventListener("click", () => {
-    currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+    currentQuestionIndex = (currentQuestionIndex + 1) % selectedQuestions.length;
     document.getElementById("next-btn").style.display = "none";
     loadQuestion();
 });
 
+// Shuffle helper
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
