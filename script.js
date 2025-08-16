@@ -53,16 +53,19 @@ function loadQuestion() {
 
 function checkAnswer(selectedIndex) {
     const q = selectedQuestions[currentQuestionIndex];
-    const correctIndex = parseInt(q.correct);
+
+    // Split correct answers into array of numbers
+    const correctIndices = q.correct.split(',').map(Number);
 
     const answerButtons = document.querySelectorAll("#answers button");
     answerButtons.forEach((btn, index) => {
-        if (index + 1 === correctIndex) btn.classList.add("correct");
+        if (correctIndices.includes(index + 1)) btn.classList.add("correct");
         else if (index + 1 === selectedIndex) btn.classList.add("wrong");
         btn.disabled = true;
     });
 
-    if (selectedIndex === correctIndex) score++;
+    // Increase score if selected answer is one of the correct ones
+    if (correctIndices.includes(selectedIndex)) score++;
 
     document.getElementById("score").innerText = `Score: ${score}/${selectedQuestions.length}`;
     document.getElementById("next-btn").style.display = "block";
