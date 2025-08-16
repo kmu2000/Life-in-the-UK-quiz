@@ -1,26 +1,37 @@
 let questions = [];
+let selectedQuestions = [];
 let score = 0;
 let currentQuestionIndex = 0;
-const QUESTIONS_PER_TEST = 30;  // number of questions per quiz
-let selectedQuestions = [];
+const QUESTIONS_PER_TEST = 30;
 
 function loadQuestionsFromCSV() {
     Papa.parse("questions.csv", {
         download: true,
         header: true,
         complete: function(results) {
-            questions = results.data.filter(q => q.question && q.option1); // remove blank rows
+            // Remove blank rows
+            questions = results.data.filter(q => q.question && q.option1);
+
+            // Shuffle all questions
             shuffleArray(questions);
 
-            // Pick 30 random questions for this test
+            // Pick first 30 for this quiz
             selectedQuestions = questions.slice(0, QUESTIONS_PER_TEST);
 
+            // Start quiz
             loadQuestion();
         }
     });
 }
 
 function loadQuestion() {
+    if (currentQuestionIndex >= selectedQuestions.length) {
+        // Quiz finished
+        document.getElementById("quiz-container").innerHTML = `<h2>Quiz Finished!</h2>
+        <p>Your score: ${score}/${selectedQuestions.length}</p>`;
+        return;
+    }
+
     const q = selectedQuestions[currentQuestionIndex];
     document.getElementById("question").innerText = q.question;
 
@@ -35,6 +46,9 @@ function loadQuestion() {
             answersDiv.appendChild(btn);
         }
     });
+
+    document.getElementById("score").innerText = `Score: ${score}/${selectedQuestions.length}`;
+    document.getElementById("next-btn").style.display = "none";
 }
 
 function checkAnswer(selectedIndex) {
@@ -55,8 +69,7 @@ function checkAnswer(selectedIndex) {
 }
 
 document.getElementById("next-btn").addEventListener("click", () => {
-    currentQuestionIndex = (currentQuestionIndex + 1) % selectedQuestions.length;
-    document.getElementById("next-btn").style.display = "none";
+    currentQuestionIndex++;
     loadQuestion();
 });
 
